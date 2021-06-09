@@ -48,8 +48,7 @@ class PartnerToken{
         .withAudience("techgeeks")
         .withIssuedAt(currentDate)
         .withExpiresAt(expireDate)
-        .withClaim("Claim1", partnerId)
-        .withClaim("Claim2", "Value2")
+        .withClaim("partnerId", partnerId)
         .sign(algorithm);
      
 
@@ -61,6 +60,7 @@ class PartnerToken{
      * @param jwtToken
      */
     public String verifyJWTToken(String jwtToken, String partnerId) {
+        String message="fail";
         String signatureSecret = "robinghosh";
         Algorithm algorithm = Algorithm.HMAC256(signatureSecret);
 
@@ -70,8 +70,10 @@ class PartnerToken{
                 .build();
 
         DecodedJWT decodedJWT = verifier.verify(jwtToken);
-        String partnerIdFromToken=decodedJWT.getClaim(partnerId).asString();
-        return partnerIdFromToken;
+        String partnerIdFromToken=decodedJWT.getClaim("partnerId").asString();
+        System.out.println("partner id from Token is =" + partnerIdFromToken);
+        if (partnerId.equals(partnerIdFromToken)) message="pass";
+        return message;
     }
 
     /**
