@@ -34,6 +34,8 @@ class PartnerToken{
 
     public String generateJWTToken(String partnerId) {
         String signatureSecret = "robinghosh";
+        
+        System.out.println("partnerId is"+ partnerId);
         Algorithm algorithm = Algorithm.HMAC256(signatureSecret);
 
         Calendar c = Calendar.getInstance();
