@@ -42,9 +42,9 @@ public class SpanishGreetingController {
         spanishGreetings.add(spanishGreeting);
     }
 
-    @PostMapping("/token")
+      @PostMapping("/token")
     @ResponseStatus(HttpStatus.OK)
-    public String processEvent(@RequestBody EventGridEvent eventgridEvent) {
+    public String processToken(@RequestBody EventGridEvent eventgridEvent) {
         return eventgridEvent.getSubject();
     }
 
@@ -64,11 +64,10 @@ public class SpanishGreetingController {
             .credential(new AzureKeyCredential(System.getenv("AZURE_EVENTGRID_EVENT_KEY")))
             .buildEventGridEventPublisherClient();
 
-        String str = \"{"PartnerId":"robin","Token":"robin" }\";
         // Create a EventGridEvent with String data
-        EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(str), "0.1");
+        //EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(str), "0.1");
         // Create a CloudEvent with Object data
-        //EventGridEvent eventModelClass = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(token), "0.1");
+        EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(token), "0.1");
         // Send them to the event grid topic altogether.
 
         List<EventGridEvent> events = new ArrayList<>();
@@ -76,7 +75,7 @@ public class SpanishGreetingController {
         publisherClient.sendEvent(eventJson);
         return "Ok";
     }
-
+    
     @PostMapping("/token/validate")
     @ResponseStatus(HttpStatus.OK) 
     public String VerifyToken(@RequestBody PartnerToken ptoken) {
