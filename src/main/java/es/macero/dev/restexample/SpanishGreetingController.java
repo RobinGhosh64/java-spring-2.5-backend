@@ -7,6 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.azure.core.credential.AzureKeyCredential;
+import com.azure.core.util.BinaryData;
+import com.azure.messaging.eventgrid.EventGridEvent;
+import com.azure.messaging.eventgrid.EventGridPublisherClient;
+import com.azure.messaging.eventgrid.EventGridPublisherClientBuilder;
+
 @RestController
 @RequestMapping("/spanish-greetings")
 public class SpanishGreetingController {
@@ -38,10 +44,36 @@ public class SpanishGreetingController {
 
     @PostMapping("/token")
     @ResponseStatus(HttpStatus.OK)
-    public PartnerToken CreateToken(@RequestBody PartnerToken ptoken) {
-        String newtoken =ptoken.generateJWTToken(ptoken.getPartnerId());
-        ptoken.setToken(newtoken);
-        return ptoken;
+    public String processEvent(@RequestBody EventGridEvent eventgridEvent) {
+        return eventgridEvent.getSubject();
+    }
+
+    @PostMapping("/event")
+    @ResponseStatus(HttpStatus.OK)
+    public String processEvent(@RequestBody EventGridEvent eventgridEvent) {
+        return eventgridEvent.getSubject();
+    }
+
+    
+    @PostMapping("/send")
+    @ResponseStatus(HttpStatus.OK)
+    public String sendEvent(@RequestBody PartnerToken token) {
+   
+        EventGridPublisherClient<EventGridEvent> publisherClient = new EventGridPublisherClientBuilder()
+            .endpoint(System.getenv("AZURE_EVENTGRID_EVENT_ENDPOINT"))  // make sure it accepts EventGridEvent
+            .credential(new AzureKeyCredential(System.getenv("AZURE_EVENTGRID_EVENT_KEY")))
+            .buildEventGridEventPublisherClient();
+
+        // Create a EventGridEvent with String data
+        EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(str), "0.1");
+        // Create a CloudEvent with Object data
+        //EventGridEvent eventModelClass = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(token), "0.1");
+        // Send them to the event grid topic altogether.
+
+        List<EventGridEvent> events = new ArrayList<>();
+        events.add(eventJson);
+        publisherClient.sendEvent(eventJson);
+        return "Ok";
     }
 
     @PostMapping("/token/validate")
