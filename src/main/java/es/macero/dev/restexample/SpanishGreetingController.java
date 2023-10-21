@@ -64,7 +64,7 @@ public class SpanishGreetingController {
             .credential(new AzureKeyCredential(System.getenv("AZURE_EVENTGRID_EVENT_KEY")))
             .buildEventGridEventPublisherClient();
 
-        String str = \"{"name":"robin","name":"robin" }\";
+        String str = \"{"PartnerId":"robin","Token":"robin" }\";
         // Create a EventGridEvent with String data
         EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(str), "0.1");
         // Create a CloudEvent with Object data
