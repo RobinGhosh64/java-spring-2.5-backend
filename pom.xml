@@ -72,6 +72,11 @@
 	<artifactId>java-jwt</artifactId>
 	<version>3.4.0</version>
     </dependency>
+  <dependency>
+    <groupId>com.azure</groupId>
+    <artifactId>azure-messaging-eventgrid</artifactId>
+    <version>4.17.0</version>
+  </dependency>
 
     <!-- MY SPECIAL addons so rest api can be explored by swagger-->
     <dependency> 
