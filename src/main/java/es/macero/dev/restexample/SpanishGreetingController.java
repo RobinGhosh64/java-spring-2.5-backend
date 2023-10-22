@@ -42,7 +42,7 @@ public class SpanishGreetingController {
         spanishGreetings.add(spanishGreeting);
     }
 
-      @PostMapping("/token")
+    @PostMapping("/token")
     @ResponseStatus(HttpStatus.OK)
     public String processToken(@RequestBody EventGridEvent eventgridEvent) {
         return eventgridEvent.getSubject();
@@ -50,9 +50,17 @@ public class SpanishGreetingController {
 
     @PostMapping("/event")
     @ResponseStatus(HttpStatus.OK)
-    public String processEvent(@RequestBody EventGridEvent eventgridEvent) {
-        return eventgridEvent.getSubject();
+    public String processEvent(@RequestBody Object object) {
+        System.out.println(object.toString());
+        return object.toString();
     }
+
+    @PostMapping("/test")
+    @ResponseStatus(HttpStatus.OK)
+    public String testEvent(@RequestBody Event event) {
+        return "subject:" + event.getSubject() + ",eventType=" + event.getEventType() + ",data=" + event.getData();
+    }
+
 
     
     @PostMapping("/send")
