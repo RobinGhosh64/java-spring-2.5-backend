@@ -59,7 +59,8 @@ public class SpanishGreetingController {
     @ResponseStatus(HttpStatus.OK)
     public String testEvent(@RequestBody Event event) {
         System.out.println("subject:" + event.getSubject() + ",eventType=" + event.getEventType() + ",data=" + event.getData());
-        return ("OK");
+        if (event.getType() == 'Microsoft.EventGrid.SubscriptionValidationEvent') return ("validationResponse=" + event.getData().validationCode)
+        else return ("OK");
     }
 
 
