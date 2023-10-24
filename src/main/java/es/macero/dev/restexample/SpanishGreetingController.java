@@ -12,6 +12,9 @@ import com.azure.core.util.BinaryData;
 import com.azure.messaging.eventgrid.EventGridEvent;
 import com.azure.messaging.eventgrid.EventGridPublisherClient;
 import com.azure.messaging.eventgrid.EventGridPublisherClientBuilder;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 
 @RestController
 @RequestMapping("/spanish-greetings")
@@ -50,22 +53,26 @@ public class SpanishGreetingController {
 
     @PostMapping("/event")
     @ResponseStatus(HttpStatus.OK)
-    public String processEvent(@RequestBody Object object) {
-        System.out.println(object.toString());
-        return object.toString();
+    public String processEvent(@RequestBody EventGridEvent eventg) {
+        System.out.println("Prcoessing");
+        Event event = eventg.getData().toObject(Event.class);
+        return "subject:" + event.getSubject() + ",eventType=" + event.getEventType();
     }
 
     @PostMapping("/test")
     @ResponseStatus(HttpStatus.OK)
     public String testEvent(@RequestBody Event event) {
-        System.out.println("subject:" + event.getSubject() + ",eventType=" + event.getEventType() + ",data=" + event.getData());
-        if (event.getType() == 'Microsoft.EventGrid.SubscriptionValidationEvent') return ("validationResponse=" + event.getData().validationCode)
+        System.out.println(event);
+        if (event.getEventType().equals("Microsoft.EventGrid.SubscriptionValidationEvent")) {
+            String jsonStr = event.getData().toString();
+            Gson gson = new Gson();
+            JsonElement element = gson.fromJson (jsonStr, JsonElement.class);
+            JsonObject jsonObj = element.getAsJsonObject();
+            return "validationResponse=" + jsonObj.get("validationCode");
+        }
         else return ("OK");
     }
 
-
-
-    //https://learn.microsoft.com/en-us/answers/questions/1195417/https://learn.microsoft.com/en-us/answers/questions/1195417/webhook-validation-handshake-failed
 
     
     @PostMapping("/send")
