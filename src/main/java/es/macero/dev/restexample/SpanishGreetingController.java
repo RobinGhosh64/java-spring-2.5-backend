@@ -58,9 +58,13 @@ public class SpanishGreetingController {
     @PostMapping("/test")
     @ResponseStatus(HttpStatus.OK)
     public String testEvent(@RequestBody Event event) {
-        return "subject:" + event.getSubject() + ",eventType=" + event.getEventType() + ",data=" + event.getData();
+        System.out.println("subject:" + event.getSubject() + ",eventType=" + event.getEventType() + ",data=" + event.getData());
+        return ("OK");
     }
 
+
+
+    //https://learn.microsoft.com/en-us/answers/questions/1195417/https://learn.microsoft.com/en-us/answers/questions/1195417/webhook-validation-handshake-failed
 
     
     @PostMapping("/send")
