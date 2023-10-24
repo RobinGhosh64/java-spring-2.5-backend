@@ -13,8 +13,8 @@ public class Event {
     @JsonProperty("subject")
     private String subject;
 
-    //@JsonProperty("data") 
-    //private String data;
+    @JsonProperty("data") 
+    private String data;
 
     @JsonProperty("eventType")
     private String eventType;
