@@ -12,7 +12,7 @@ import com.azure.core.util.BinaryData;
 import com.azure.messaging.eventgrid.EventGridEvent;
 import com.azure.messaging.eventgrid.EventGridPublisherClient;
 import com.azure.messaging.eventgrid.EventGridPublisherClientBuilder;
-import com.azure.messaging.eventgrid.SubscriptionValidationEventData;
+import com.azure.messaging.eventgrid.systemevents.SubscriptionValidationEventData;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -57,16 +57,19 @@ public class SpanishGreetingController {
     public String processEvent(@RequestBody EventGridEvent event) {
         System.out.println("Processing");
         Object data = event.getData();
-
+        String response="";
     if (data instanceof SubscriptionValidationEventData) {
         SubscriptionValidationEventData validationData = (SubscriptionValidationEventData) data;
         System.out.println(validationData.getValidationCode());
+        response = "{\"validationResponse\":" + "\"" + validationData.getValidationCode() + "\"}";
     } else if (data instanceof byte[]) {
         // we can turn the data into the correct type by calling this method.
         // since we set the data as a string when sending, we pass the String class in to get it back.
-        String stringData = event.getData(String.class);
-        System.out.println(stringData); // "Example Data"
+        BinaryData binData = event.getData();
+        System.out.println(binData.toString()); // "Example Data"
+        response=binData.toString();
     }
+    return response;
     }
 
     @PostMapping("/test")
@@ -115,3 +118,4 @@ public class SpanishGreetingController {
 
 
 }
+
