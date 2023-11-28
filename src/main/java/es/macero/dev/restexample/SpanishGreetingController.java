@@ -17,6 +17,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
+import org.springframework.http.ResponseEntity;
+
+
 @RestController
 @RequestMapping("/spanish-greetings")
 public class SpanishGreetingController {
@@ -69,7 +72,7 @@ public class SpanishGreetingController {
         System.out.println(binData.toString()); // "Example Data"
         response=binData.toString();
     }
-    return response;
+    return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/test")
