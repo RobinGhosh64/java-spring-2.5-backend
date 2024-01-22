@@ -14,8 +14,11 @@ import com.azure.messaging.eventgrid.EventGridPublisherClient;
 import com.azure.messaging.eventgrid.EventGridPublisherClientBuilder;
 import com.azure.messaging.eventgrid.systemevents.SubscriptionValidationEventData;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import lombok.val;
 
 import org.springframework.http.ResponseEntity;
 
@@ -57,7 +60,7 @@ public class SpanishGreetingController {
 
     @PostMapping("/event")
     @ResponseStatus(HttpStatus.OK)
-    public String processEvent(@RequestBody EventGridEvent event) {
+    public ResponseEntity<String> processEvent(@RequestBody EventGridEvent event) {
         System.out.println("Processing");
         Object data = event.getData();
         String response="";
@@ -65,14 +68,25 @@ public class SpanishGreetingController {
         SubscriptionValidationEventData validationData = (SubscriptionValidationEventData) data;
         System.out.println(validationData.getValidationCode());
         response = "{\"validationResponse\":" + "\"" + validationData.getValidationCode() + "\"}";
+
+        final Gson gson = new GsonBuilder().create();
+        final String code = validationData.getValidationCode();
+
+        SubscriptionValidationEventData subscriptionValidationResponse =
+            gson.fromJson(code, SubscriptionValidationEventData.class);
+        JsonObject returnObj = new JsonObject();
+        returnObj.add("validationResponse",
+                      gson.fromJson(subscriptionValidationResponse.getValidationCode(),
+                                    JsonElement.class));
+        val responseString = returnObj.toString();
+        return new ResponseEntity<>(responseString, HttpStatus.OK);
     } else if (data instanceof byte[]) {
         // we can turn the data into the correct type by calling this method.
         // since we set the data as a string when sending, we pass the String class in to get it back.
         BinaryData binData = event.getData();
         System.out.println(binData.toString()); // "Example Data"
         response=binData.toString();
-    }
-    return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/test")
