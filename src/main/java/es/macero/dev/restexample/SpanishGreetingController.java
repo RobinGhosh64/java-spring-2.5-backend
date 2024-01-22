@@ -67,7 +67,6 @@ public class SpanishGreetingController {
     if (data instanceof SubscriptionValidationEventData) {
         SubscriptionValidationEventData validationData = (SubscriptionValidationEventData) data;
         System.out.println(validationData.getValidationCode());
-        response = "{\"validationResponse\":" + "\"" + validationData.getValidationCode() + "\"}";
 
         final Gson gson = new GsonBuilder().create();
         final String code = validationData.getValidationCode();
@@ -78,15 +77,15 @@ public class SpanishGreetingController {
         returnObj.add("validationResponse",
                       gson.fromJson(subscriptionValidationResponse.getValidationCode(),
                                     JsonElement.class));
-        val responseString = returnObj.toString();
-        return new ResponseEntity<>(responseString, HttpStatus.OK);
+        response = returnObj.toString();
     } else if (data instanceof byte[]) {
         // we can turn the data into the correct type by calling this method.
         // since we set the data as a string when sending, we pass the String class in to get it back.
         BinaryData binData = event.getData();
         System.out.println(binData.toString()); // "Example Data"
         response=binData.toString();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/test")

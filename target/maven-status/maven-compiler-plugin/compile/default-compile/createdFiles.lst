@@ -1,2 +1,5 @@
+es/macero/dev/restexample/Event.class
+es/macero/dev/restexample/SpanishGreetingController.class
 es/macero/dev/SpringBootRestcontrollerExampleApplication.class
 es/macero/dev/restexample/PartnerToken.class
+es/macero/dev/restexample/SpanishGreeting.class
