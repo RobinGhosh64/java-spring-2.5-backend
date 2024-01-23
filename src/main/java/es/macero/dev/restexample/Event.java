@@ -1,6 +1,10 @@
 package es.macero.dev.restexample;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.JsonElement;
+
 import lombok.Data;
 
 
@@ -13,8 +17,12 @@ public class Event {
     @JsonProperty("subject")
     private String subject;
 
-    @JsonProperty("data") 
-    private String data;
+    @JsonProperty("target")
+    private String topic;
+
+
+    @JsonProperty("data")
+    private ValidationEvent data;
 
     @JsonProperty("eventType")
     private String eventType;
@@ -22,8 +30,11 @@ public class Event {
     @JsonProperty("eventTime")
     private String eventTime;
 
-    @JsonProperty("target")
-    private String target;
+    @JsonProperty("metadataVersion")
+    private String metadataVersion;
+
+    @JsonProperty("dataVersion")
+    private String dataVersion;
 
 
 }

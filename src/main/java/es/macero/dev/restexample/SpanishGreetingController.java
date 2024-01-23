@@ -1,7 +1,13 @@
 package es.macero.dev.restexample;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -93,21 +99,18 @@ public class SpanishGreetingController {
     public String testEvent(@RequestBody Event event) {
         System.out.println(event);
         if (event.getEventType().equals("Microsoft.EventGrid.SubscriptionValidationEvent")) {
-            String jsonStr = event.getData().toString();
-            Gson gson = new Gson();
-            JsonElement element = gson.fromJson (jsonStr, JsonElement.class);
-            JsonObject jsonObj = element.getAsJsonObject();
-            return "validationResponse=" + jsonObj.get("validationCode");
+            String jsonStr = event.getData().getValidationCode();
+            return "{\"validationResponse\" : \"" + jsonStr + "\"}";
         }
-        else return ("OK");
+        else return event.getData().toString();
     }
 
 
     
     @PostMapping("/send")
     @ResponseStatus(HttpStatus.OK)
-    public String sendEvent(@RequestBody PartnerToken token) {
-   
+    public String sendEvent(@RequestBody Event event) {
+   /* 
         EventGridPublisherClient<EventGridEvent> publisherClient = new EventGridPublisherClientBuilder()
             .endpoint(System.getenv("AZURE_EVENTGRID_EVENT_ENDPOINT"))  // make sure it accepts EventGridEvent
             .credential(new AzureKeyCredential(System.getenv("AZURE_EVENTGRID_EVENT_KEY")))
@@ -116,13 +119,31 @@ public class SpanishGreetingController {
         // Create a EventGridEvent with String data
         //EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(str), "0.1");
         // Create a CloudEvent with Object data
-        EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "DevStudio.Test", BinaryData.fromObject(token), "0.1");
+        */
+        EventGridEvent eventJson = new EventGridEvent("com/example/MyApp", "Microsoft.EventGrid.SubscriptionValidationEvent", BinaryData.fromObject(event), "0.1");
         // Send them to the event grid topic altogether.
 
+        // Send to our EventService
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<String> requestEntity = new HttpEntity<>(eventJson.toString(), headers);
+            try {
+                ResponseEntity<String> response = restTemplate.exchange(
+                    "http://localhost:8080/spanish-greetings/event",
+                    HttpMethod.POST,
+                    requestEntity,
+                    String.class);     
+                    return response.toString();
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        /* 
         List<EventGridEvent> events = new ArrayList<>();
         events.add(eventJson);
         publisherClient.sendEvent(eventJson);
         return "Ok";
+        */
     }
     
     @PostMapping("/token/validate")
