@@ -66,7 +66,7 @@ public class SpanishGreetingController {
 
     @PostMapping("/event")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<String> processEvent(@RequestBody EventGridEvent event) {
+    public String processEvent(@RequestBody EventGridEvent event) {
         System.out.println("Processing");
         Object data = event.getData();
         String response="";
@@ -81,7 +81,7 @@ public class SpanishGreetingController {
         System.out.println(binData.toString()); // "Example Data"
         response=binData.toString();
     }
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return response;
     }
 
     @PostMapping("/test")
