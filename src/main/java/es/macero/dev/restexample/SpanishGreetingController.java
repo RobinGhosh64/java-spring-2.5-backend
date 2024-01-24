@@ -70,20 +70,10 @@ public class SpanishGreetingController {
         System.out.println("Processing");
         Object data = event.getData();
         String response="";
-    if (data instanceof SubscriptionValidationEventData) {
+    if (event.getEventType().equals("Microsoft.EventGrid.SubscriptionValidationEvent")) {
         SubscriptionValidationEventData validationData = (SubscriptionValidationEventData) data;
         System.out.println(validationData.getValidationCode());
-
-        final Gson gson = new GsonBuilder().create();
-        final String code = validationData.getValidationCode();
-
-        SubscriptionValidationEventData subscriptionValidationResponse =
-            gson.fromJson(code, SubscriptionValidationEventData.class);
-        JsonObject returnObj = new JsonObject();
-        returnObj.add("validationResponse",
-                      gson.fromJson(subscriptionValidationResponse.getValidationCode(),
-                                    JsonElement.class));
-        response = returnObj.toString();
+        return "{\"validationResponse\" : \"" + validationData.getValidationCode() + "\"}";
     } else if (data instanceof byte[]) {
         // we can turn the data into the correct type by calling this method.
         // since we set the data as a string when sending, we pass the String class in to get it back.
