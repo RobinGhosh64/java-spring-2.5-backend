@@ -71,7 +71,8 @@ public class SpanishGreetingController {
     @PostMapping("/event")
     @ResponseStatus(HttpStatus.OK)
     public String processEvent(@RequestBody List<EventGridEvent> events) {
-        EventGridEvent event=events.get(0);
+        //for right now let's pick up only the first item in the list
+        EventGridEvent event=events.get(0);   
         log.info("Processing Azure Events..");
         return parseAndProcessEvent(event);
     }
