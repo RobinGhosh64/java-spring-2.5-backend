@@ -1,4 +1,5 @@
 package es.macero.dev.restexample;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -18,6 +19,7 @@ import com.azure.messaging.eventgrid.EventGridEvent;
 import com.azure.messaging.eventgrid.EventGridPublisherClient;
 import com.azure.messaging.eventgrid.EventGridPublisherClientBuilder;
 import com.azure.messaging.eventgrid.systemevents.SubscriptionValidationEventData;
+import com.azure.messaging.eventgrid.systemevents.SubscriptionValidationResponse;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -70,55 +72,60 @@ public class SpanishGreetingController {
     @ResponseStatus(HttpStatus.OK)
     public String processEvent(@RequestBody List<EventGridEvent> events) {
         EventGridEvent event=events.get(0);
-        log.debug("Processing Azure Events..");
+        log.info("Processing Azure Events..");
         return parseAndProcessEvent(event);
     }
 
 
     private String parseAndProcessEvent(EventGridEvent event) {
 
-        log.debug("Parse and Process Event..");
+        log.info("Parse and Process Event..");
         Object data = event.getData();
 
-        //
-        // Check if event type is SubscriptionValidation from Azure and also from our test bed
-        //
+        /* 
+          Check if event type is SubscriptionValidation from Azure and also from our test bed
+        */
         if (event.getEventType().equals("Microsoft.EventGrid.SubscriptionValidationEvent")) {
 
-            log.debug("Processing SubscriptionValidation..");
-            //
-            // Check if this call is from Azure to validate our Webhook. In which case we need to return  {"validationResponse":"xxxxxx"}
-            //
+            log.info("Processing SubscriptionValidation..");
+            /*
+            * Check if this call is from Azure to validate our Webhook. In which case we need to return  {"validationResponse":"xxxxxx"}
+            */
             if (data instanceof SubscriptionValidationEventData) {
                 SubscriptionValidationEventData validationData = (SubscriptionValidationEventData) data;
-                log.debug("ValidationData:" + validationData.getValidationCode());
+                log.info("ValidationData:" + validationData.getValidationCode());
                 String jsonStr = validationData.getValidationCode();
                 return "{\"validationResponse\" : \"" + jsonStr + "\"}";
             }
 
-            // If we have come here, we are using our test bed and sending a Event Message on our own forcibly
+            /* 
+            * If we have came here, we are using our test bed and sending a custom EventGridEvent msg forcibly
+            */
             if (data instanceof BinaryData) {
-                log.debug("Forcing with a real Event Grid message..");
-                log.debug("Printing the payload.");
+                log.info("Forcing with a real Event Grid message..");
+                log.info("Printing the payload.");
                 return data.toString();
             }
         }
         else {
-            log.debug("Our custom eventType=" + event.getEventType());
-            log.debug("Our custom payload:" + event.getData().toString());
-            //
-            // Process the payload
-            //
+            /* 
+            *   This is where we will really process our payload for async processing
+            */
+            log.info("Our custom eventType=" + event.getEventType());
+            log.info("Our custom payload:" + event.getData().toString());
+            /*
+            * Process the payload please
+            */
 
         }
-        return "OK. Will process your Event Asynchronously";
+        return "OK. Will process your Event Asynchronously...";
     }
 
 
     @PostMapping("/test")
     @ResponseStatus(HttpStatus.OK)
     public String testEvent(@RequestBody Event event) {
-        System.out.println(event);
+        log.info("/test end point");
         if (event.getEventType().equals("Microsoft.EventGrid.SubscriptionValidationEvent")) {
             String jsonStr = event.getData().getValidationCode();
             return "{\"validationResponse\" : \"" + jsonStr + "\"}";
@@ -132,39 +139,42 @@ public class SpanishGreetingController {
     @ResponseStatus(HttpStatus.OK)
     public String sendEvent(@RequestBody List<Event> events) {
         Event event=events.get(0);
-        log.debug("Processing forceeventgridevent..");
+        log.info("Processing forceeventgridevent..");
         EventGridEvent eventMsg = new EventGridEvent("com/example/MyApp", event.getEventType(), BinaryData.fromObject(event.getData()), event.getDataVersion());
         // Send them to the event grid topic altogether.
         String str = parseAndProcessEvent(eventMsg);
-        log.debug("Response:" + str);
+        log.info("Response : " + str);
         return str;
     }
     
 
 
-
     @PostMapping("/insert2eventgrid")
     @ResponseStatus(HttpStatus.OK)
-    public String insert2EventGrid(@RequestBody Event event) {
-   
+    public String insert2EventGrid(@RequestBody List<Event> events) {
+        Event event=events.get(0);
         try {
 
+            String endpoint=System.getenv("AZURE_EVENTGRID_ENDPOINT");
+            String sascredential=System.getenv("AZURE_EVENTGRID_KEY");
+
+            log.debug("endpoint=" , endpoint);
+            log.debug("sascredential=" , sascredential);
+            
             // Get handle to Azure Event Grid publisher
-
             EventGridPublisherClient<EventGridEvent> publisherClient = new EventGridPublisherClientBuilder()
-                .endpoint(System.getenv("AZURE_EVENTGRID_ENDPOINT"))  // make sure it accepts EventGridEvent
-                .credential(new AzureKeyCredential(System.getenv("AZURE_EVENTGRID_KEY")))
+                .endpoint(endpoint)  // make sure it accepts EventGridEvent
+                .credential(new AzureKeyCredential(sascredential))
                 .buildEventGridEventPublisherClient();
-
+            
             // Create custom message
-        
             EventGridEvent eventMsg = new EventGridEvent("com/example/MyApp", event.getEventType(), BinaryData.fromObject(event.getData()), event.getDataVersion());
         
             // Insert into Azure Event Grid
             publisherClient.sendEvent(eventMsg);
         }
         catch (Exception e) {
-            log.error("Exception :" + e.getMessage());
+            log.error("Azure Event Grid Exception :" + e.getMessage());
         }
         return "Ok";
     }
@@ -177,6 +187,4 @@ public class SpanishGreetingController {
         return verifytoken;
     }
 
-
 }
-
