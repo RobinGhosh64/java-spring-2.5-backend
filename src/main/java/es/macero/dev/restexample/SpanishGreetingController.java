@@ -10,6 +10,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -70,18 +71,41 @@ public class SpanishGreetingController {
 
     @PostMapping("/event")
     @ResponseStatus(HttpStatus.OK)
-    public String processEvent(@RequestBody List<EventGridEvent> events) {
+    public String processEvent(@RequestBody List<LinkedHashMap> events) {
         //for right now let's pick up only the first item in the list
-        EventGridEvent event=events.get(0);   
+        try {
+            Event event = new Event();
+            LinkedHashMap obj = events.get(0);
+
+            event.setId((String)obj.get("id"));
+            event.setTopic((String)obj.get("topic"));
+            event.setSubject((String)obj.get("subject"));
+            event.setEventType((String)obj.get("eventType"));
+            event.setEventTime((String) obj.get("eventTime"));
+            if(event.getEventType().equals("Microsoft.EventGrid.SubscriptionValidationEvent")) {
+                ValidationEvent ve = new ValidationEvent();
+                LinkedHashMap<String,String> da = (LinkedHashMap) obj.get("data");
+                ve.setValidationCode(da.get("validationCode"));
+                ve.setValidationUrl(da.get("validationUrl"));
+                event.setData(ve);
+            } // robin.ghosh
+            else{
+                event.setData1((LinkedHashMap)obj.get("data"));
+            }
+
+          return parseAndProcessEvent(event);
+        }catch (Exception e){
+            System.out.println(e.toString());
+        }
         log.info("Processing Azure Events..");
-        return parseAndProcessEvent(event);
+        return "";
     }
 
 
-    private String parseAndProcessEvent(EventGridEvent event) {
+    private String parseAndProcessEvent(Event event) {
 
         log.info("Parse and Process Event..");
-        Object data = event.getData();
+        Object data = event.getData()==null?event.getData1():event.getData();
 
         /* 
           Check if event type is SubscriptionValidation from Azure and also from our test bed
@@ -90,33 +114,34 @@ public class SpanishGreetingController {
 
             log.info("Processing SubscriptionValidation..");
             /*
-            * Check if this call is from Azure to validate our Webhook. In which case we need to return  {"validationResponse":"xxxxxx"}
-            */
-            if (data instanceof SubscriptionValidationEventData) {
-                SubscriptionValidationEventData validationData = (SubscriptionValidationEventData) data;
+             * Check if this call is from Azure to validate our Webhook. In which case we need to return  {"validationResponse":"xxxxxx"}
+             */
+            if (data instanceof ValidationEvent) {
+                ValidationEvent validationData = (ValidationEvent) data;
                 log.info("ValidationData:" + validationData.getValidationCode());
                 String jsonStr = validationData.getValidationCode();
                 return "{\"validationResponse\" : \"" + jsonStr + "\"}";
             }
 
-            /* 
-            * If we have came here, we are using our test bed and sending a custom EventGridEvent msg forcibly
-            */
-            if (data instanceof BinaryData) {
-                log.info("Forcing with a real Event Grid message..");
-                log.info("Printing the payload.");
-                return data.toString();
-            }
+            /*
+             * If we have came here, we are using our test bed and sending a custom EventGridEvent msg forcibly
+             */
+
         }
         else {
             /* 
             *   This is where we will really process our payload for async processing
             */
             log.info("Our custom eventType=" + event.getEventType());
-            log.info("Our custom payload:" + event.getData().toString());
+            log.info("Our custom payload:" + event.getData1().toString());
             /*
             * Process the payload please
             */
+            if (data instanceof LinkedHashMap) {
+                log.info("Forcing with a real Event Grid message..");
+                log.info("Printing the payload.");
+                return data.toString();
+            }
 
         }
         return "OK. Will process your Event Asynchronously...";
@@ -143,7 +168,7 @@ public class SpanishGreetingController {
         log.info("Processing forceeventgridevent..");
         EventGridEvent eventMsg = new EventGridEvent("com/example/MyApp", event.getEventType(), BinaryData.fromObject(event.getData()), event.getDataVersion());
         // Send them to the event grid topic altogether.
-        String str = parseAndProcessEvent(eventMsg);
+        String str = "";//parseAndProcessEvent(eventMsg);
         log.info("Response : " + str);
         return str;
     }
