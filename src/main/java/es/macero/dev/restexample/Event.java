@@ -1,11 +1,13 @@
 package es.macero.dev.restexample;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.JsonElement;
 
 import lombok.Data;
+import org.springframework.boot.actuate.endpoint.web.Link;
 
 
 @Data
@@ -17,7 +19,7 @@ public class Event {
     @JsonProperty("subject")
     private String subject;
 
-    @JsonProperty("target")
+    @JsonProperty("topic")
     private String topic;
 
 
@@ -36,5 +38,6 @@ public class Event {
     @JsonProperty("dataVersion")
     private String dataVersion;
 
+    private LinkedHashMap<String,String> data1;
 
 }
