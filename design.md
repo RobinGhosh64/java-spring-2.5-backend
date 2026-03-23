@@ -1,27 +1,8 @@
 
-# Azure Dev Day - Serverless Exercise (Artifact By: Robin Ghosh @robin.ghosh@microsoft.com)
+# API DESIGN - (Microservices + Contracts) (Artifact By: Robin Ghosh @robin.ghosh@microsoft.com)
 
 
-### Step 5: Create Storage Account 
-
-
-Navigate to the Resource Group created previously, select Create Resource 
-
-
-<img src="media/devday-select-storage.png">
-
-
-Then select on **Create** Storage Account
-
-Fill all the parameters as shown:
-
-- Storage Account Name: **devdayfebmystorage**
-- Region : **East US**
-- Performamcnce: **Standard** 
-- Redundancy: **Geo redundancy** 
-
-Click on **Review + create** and then confirm final creation
-
+We design domain-driven microservices, each owning its own data and exposing APIs.
 <img src="media/devday-select-create-storage-account.png">
 
 
@@ -44,20 +25,6 @@ Important steps to follow, please pay attention.
 Navigate to the Resource Group created previously, select the **devdaymystorage** storage account, Click on **Events** <img src="media/rg.events.select.png" > icon and thenk click on **Event Subscription** on top, to create a new consumer. 
 
 <img src="media/devday-create-azure-event-subscriber.png">
-
-Fill all the parameters as shown:
-
-
-- Name: **eventgrid-consumer**
-- Event Schema: **Event Grid Schema** 
-- System Topic Name: **devday-my-topic**
-- Filter to Event Types: default to **2 selected**, or as desired
-- Endpoint Type: **Azure Function** , select from the drop-down list
-- Endpoint: **select endpoint** (Click and navigate to another right window and select the desired FunctionApp and select the default **Function Name**  
-
-Then click **Confirm Selection** for the endpoint and then click on **Create** for completion.
-
-<img src="media/finish-up-wiring.png"> 
 
 
 ### Step 7: Event Grid Blob Storage Light Test
@@ -125,73 +92,244 @@ module.exports = async function (context, eventGridEvent) {
 
 ````
 
-### Step 8.c: Azure Cosmos DB Output Binding Test 
+Core Services
+1. Order Service
+POST /orders
+GET /orders/{orderId}
+GET /orders/{orderId}/status
 
-The next step is repeat of [Step 6](#step-6-event-grid-blob-storage-test) with an additional verification. Set up browsers as described previously, and upload a desired file into the **container 1**: 
+Response
 
-- Verify the **EventGridTrigger1** triggers successfully via the **Logs** 
-- Navigate to the Cosmos DB **Data Explorer**, select the **MyCollection**, **Items** document
-- Verify the corresponding event id from the event grid trigger function matches and successive changes to the blob storage trigger updates to items in the Cosmos DB
+{
+  "orderId": "ORD-123",
+  "customerId": "CUST-9",
+  "products": [
+    {
+      "productId": "PROD-456",
+      "quantity": 2
+    }
+  ],
+  "status": "IN_PRODUCTION",
+  "createdAt": "2026-03-20T10:00:00Z"
+}
+2. Product Digital Twin Service
+GET /products/{productId}/lifecycle
+GET /products/{productId}/health
 
-<img src="media/finish-test-2.png"> 
+Response
 
-The previous example demonstrates the relationship and services to connect Azure Event Grid to Azure Functions and then persist data in Azure Cosmos DB for an example of an event-driven architecture using **Azure Serverless offerings** 
-
---------------------------------------
-
-## Step 9: Azure Cosmos DB Input Binding for HttpTrigger1
-
-The next step in the application architecture is to read documents representing the Event Grid event from **Cosmos DB** for subsequent downstream processing. Adding Cosmos DB requires two steps: 
-
-- Adding an **Input Binding** to the **HttpTrigger1**
-- Updating the  **HttpTrigger1** function to read all items from the collection in the Cosmos DB 
-
-
-### Step 9.a: Azure Cosmos DB Output Binding
-
-Navigate to the **HttpTrigger1**, select **Integration** and **Add output**: 
-- Binding Type: **Azure Cosmos DB**, select **New**, **Cosmos DB account connection**, and link to Cosmos DB account created earlier in the resource group
-- Document parameter name: **inputDocument** (case sensitive and must match the outputDocument property in the function 
-- Database name: **inDatabase** (as desired)
-- Collection name: **MyCollection** (as desired) 
-- If true, ..: **Yes** 
-- Cosmos DB account connection: **select Cosmos DB account created earlier**  
-
-
-<img src="media/create_input_binding.png"> 
-
-
-### Step 9.b: Update Azure Function to set the output binding with the input data being passed
-
-**Httprigger1\index.js** with **outputDocument** set to emit to Cosmos DB output binding: 
-
-````shell
-
-module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
-
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: context.bindings.inputDocument
-    };
+{
+  "productId": "PROD-456",
+  "orderId": "ORD-123",
+  "status": "INSTALLED",
+  "location": "Atlanta, GA",
+  "components": [...],
+  "lastServiceDate": "2026-03-10",
+  "healthScore": 0.87
+}
+3. Event Ingestion API (for external systems)
+POST /events
+{
+  "eventType": "ProductionStarted",
+  "productId": "PROD-456",
+  "timestamp": "2026-03-21T08:00:00Z",
+  "metadata": {
+    "factoryId": "F-1",
+    "lineId": "L-2"
+  }
 }
 
-````
+👉 This API pushes into Event Hubs / Service Bus
 
-### Step 9.c: Azure Cosmos DB Input Binding Test 
+4. AI Query API (Natural Language)
+POST /ai/query
+{
+  "query": "Why is order ORD-123 delayed?"
+}
 
-The next step is repeat of [Step 6](#step-6-event-grid-blob-storage-test) with an additional verification. Set up browsers as described previously, and upload a desired file into the **container 1**: 
-- Run the Test/Run option and use GET instead of POST. Make sure you r seeing 200 Success
-- Verify the **HttpTrigger1** triggers successfully via the **Logs** 
+Response
 
-<img src="media/finish-test-1.png"> 
+{
+  "answer": "Delay due to supplier shortage in component X",
+  "confidence": 0.92,
+  "sources": ["supply_chain_log_2026_03"]
+}
+🔁 2) EVENT SCHEMA DESIGN (CRITICAL)
 
-The previous example demonstrates the relationship and services to connect Azure Event Grid to Azure Functions and then persist data in Azure Cosmos DB for an example of an event-driven architecture using **Azure Serverless offerings** 
+Use a standardized event envelope across all domains.
 
-## Step 10: Clean up resources and finish
+Base Event Schema (CloudEvents-style)
+{
+  "eventId": "uuid",
+  "eventType": "ProductionStarted",
+  "source": "MES",
+  "timestamp": "2026-03-21T08:00:00Z",
+  "productId": "PROD-456",
+  "orderId": "ORD-123",
+  "payload": {
+    " المصنعId": "F-1",
+    "lineId": "L-2"
+  }
+}
+Key Event Types
+OrderPlaced
+ProductionStarted
+QualityCheckPassed
+QualityCheckFailed
+Shipped
+Delivered
+Installed
+TelemetryReceived
+ServicePerformed
+FailureDetected
 
-Select your resource group **devdayfeb-rsg** and delete. Remember to confirm all the resources in it.
+👉 All services subscribe to relevant events.
 
-## Bonus Material 
+Event Versioning Strategy
+{
+  "eventType": "ProductionStarted",
+  "version": "v2"
+}
+Backward compatible changes only
+Schema registry (e.g., Avro + registry)
+🧠 3) DATA MODEL (DIGITAL TWIN)
 
-Want to accelerate and test your understanding of the various tools, integrate Azure Functions, Azure Kubernetes by adding KEDA auto-scaling. Find the [Bonus Material here](https://github.com/garyciampa/azure-dev-day-serverless/blob/main/BonusMaterial/readme.md)
+Stored in Cosmos DB (NoSQL)
+
+Product Digital Twin Document
+{
+  "productId": "PROD-456",
+  "orderId": "ORD-123",
+  "status": "INSTALLED",
+  "lifecycle": [
+    {
+      "stage": "ORDERED",
+      "timestamp": "2026-03-20T10:00:00Z"
+    },
+    {
+      "stage": "PRODUCTION",
+      "timestamp": "2026-03-21T08:00:00Z"
+    }
+  ],
+  "components": [
+    {
+      "componentId": "COMP-1",
+      "supplierId": "SUP-22",
+      "batchId": "B-789"
+    }
+  ],
+  "location": {
+    "siteId": "SITE-99",
+    "geo": "33.7490,-84.3880"
+  },
+  "health": {
+    "score": 0.87,
+    "lastUpdated": "2026-03-23T12:00:00Z"
+  }
+}
+Time-Series IoT Schema (Azure Data Explorer)
+{
+  "timestamp": "2026-03-23T12:00:00Z",
+  "productId": "PROD-456",
+  "temperature": 78.5,
+  "pressure": 30.2,
+  "vibration": 0.02
+}
+Graph Relationships (Optional but powerful)
+Product → Component → Supplier
+Product → Service Event → Technician
+Product → Failure → Root Cause
+🤖 4) AI / ML MODEL CHOICES
+A. Predictive Maintenance
+Model Options
+Gradient Boosted Trees (XGBoost, LightGBM)
+LSTM (for time-series)
+Transformer-based time-series models (advanced)
+Features
+Sensor data (rolling averages, trends)
+Usage patterns
+Environmental conditions
+Service history
+Output
+{
+  "productId": "PROD-456",
+  "failureProbability": 0.78,
+  "predictedFailureWindowDays": 14
+}
+B. Anomaly Detection
+Techniques
+Isolation Forest
+Autoencoders
+Statistical thresholds (baseline)
+
+Used for:
+
+Manufacturing defects
+Sensor anomalies
+C. Delay Prediction (Supply Chain)
+Model
+Classification / regression (XGBoost)
+Inputs
+Supplier performance
+Inventory levels
+Historical delays
+External signals (weather, logistics)
+D. Generative AI (RAG Architecture)
+Stack
+Azure OpenAI (LLM)
+Azure Cognitive Search (vector DB)
+RAG Pipeline
+User Query
+   ↓
+Embedding Model
+   ↓
+Vector Search (manuals, logs, tickets)
+   ↓
+Context Retrieval
+   ↓
+LLM (grounded response)
+Example Retrieved Context
+Service manual PDF
+Past failure tickets
+Technician notes
+🧠 Prompt Engineering (Example)
+You are an industrial maintenance assistant.
+
+Context:
+- Product: PROD-456
+- Recent issue: overheating
+- Sensor data: temperature rising steadily
+
+Question:
+What is the likely cause and recommended fix?
+⚙️ 5) DATA PIPELINE (END-TO-END)
+Real-Time Flow
+IoT Device → IoT Hub → Event Hubs → Stream Processing (Databricks)
+→ Feature Store → ML Model → Prediction → Cosmos DB
+Batch Flow
+Data Lake → Data Factory → Synapse → BI / Model Training
+🔐 6) OBSERVABILITY + RELIABILITY
+Monitoring
+Azure Monitor
+Application Insights
+Key Metrics
+Event lag
+Model accuracy
+API latency
+Data freshness
+Resilience Patterns
+Retry + dead-letter queues (Service Bus)
+Idempotent event processing
+Circuit breakers (API layer)
+🎯 Final “Senior-Level” Insight
+
+If you want to stand out, say this:
+
+“The hardest part isn’t the AI—it’s building a consistent event model and digital thread. Once that’s in place, AI becomes a force multiplier across every lifecycle stage.”
+
+If you want, I can go even further into:
+
+Database partitioning strategies (Cosmos DB RU optimization)
+Exact feature engineering examples
+Terraform / deployment architecture
+Sequence diagrams for one lifecycle event
