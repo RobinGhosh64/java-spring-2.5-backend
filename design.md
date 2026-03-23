@@ -159,7 +159,8 @@ Stored in Cosmos DB (NoSQL)
   }
 }
 ````
-Time-Series IoT Schema (Azure Data Explorer)
+### Time-Series IoT Schema (Azure Data Explorer)
+````shell
 {
   "timestamp": "2026-03-23T12:00:00Z",
   "productId": "PROD-456",
@@ -167,29 +168,32 @@ Time-Series IoT Schema (Azure Data Explorer)
   "pressure": 30.2,
   "vibration": 0.02
 }
-Graph Relationships (Optional but powerful)
+````
+### Graph Relationships (Optional but powerful)
 Product → Component → Supplier
 Product → Service Event → Technician
 Product → Failure → Root Cause
-🤖 4) AI / ML MODEL CHOICES
-A. Predictive Maintenance
-Model Options
+## 🤖 4) AI / ML MODEL CHOICES
+### A. Predictive Maintenance
+#### Model Options
 Gradient Boosted Trees (XGBoost, LightGBM)
 LSTM (for time-series)
 Transformer-based time-series models (advanced)
-Features
+#### Features
 Sensor data (rolling averages, trends)
 Usage patterns
 Environmental conditions
 Service history
-Output
+#### Output
+````shell
 {
   "productId": "PROD-456",
   "failureProbability": 0.78,
   "predictedFailureWindowDays": 14
 }
-B. Anomaly Detection
-Techniques
+````
+### B. Anomaly Detection
+### Techniques
 Isolation Forest
 Autoencoders
 Statistical thresholds (baseline)
@@ -198,10 +202,10 @@ Used for:
 
 Manufacturing defects
 Sensor anomalies
-C. Delay Prediction (Supply Chain)
-Model
+### C. Delay Prediction (Supply Chain)
+#### Model
 Classification / regression (XGBoost)
-Inputs
+#### Inputs
 Supplier performance
 Inventory levels
 Historical delays
