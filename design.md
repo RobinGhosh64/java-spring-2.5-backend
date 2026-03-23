@@ -40,10 +40,12 @@ module.exports = async function (context, eventGridEvent) {
 ````
 
 Core Services
-1. Order Service
+#1. Order Service
+````shell
 POST /orders
 GET /orders/{orderId}
 GET /orders/{orderId}/status
+````
 
 Response
 ````shell
@@ -60,7 +62,7 @@ Response
   "createdAt": "2026-03-20T10:00:00Z"
 }
 ````
-2. Product Digital Twin Service
+#2. Product Digital Twin Service
 GET /products/{productId}/lifecycle
 GET /products/{productId}/health
 
