@@ -206,10 +206,10 @@ Sensor anomalies
 #### Model
 Classification / regression (XGBoost)
 #### Inputs
-Supplier performance
-Inventory levels
-Historical delays
-External signals (weather, logistics)
+- Supplier performance
+- Inventory levels
+- Historical delays
+- External signals (weather, logistics)
 ### D. Generative AI (RAG Architecture)
 #### Stack
 Azure OpenAI (LLM)
@@ -254,17 +254,17 @@ Data Lake → Data Factory → Synapse → BI / Model Training
 ````
 ### 🔐 6) OBSERVABILITY + RELIABILITY
 ### Monitoring
-Azure Monitor
-Application Insights
+- Azure Monitor
+- Application Insights
 ### Key Metrics
-Event lag
-Model accuracy
-API latency
-Data freshness
+- Event lag
+- Model accuracy
+- API latency
+- Data freshness
 ### Resilience Patterns
-Retry + dead-letter queues (Service Bus)
-Idempotent event processing
-Circuit breakers (API layer)
+-Retry + dead-letter queues (Service Bus)
+- Idempotent event processing
+-Circuit breakers (API layer)
 ### 🎯 Final “Senior-Level” Insight
 
 
