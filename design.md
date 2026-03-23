@@ -97,19 +97,22 @@ POST /events
 
 👉 This API pushes into Event Hubs / Service Bus
 
-4. AI Query API (Natural Language)
+### 4. AI Query API (Natural Language)
+````shell
 POST /ai/query
 {
   "query": "Why is order ORD-123 delayed?"
 }
-
+````
 Response
+````shell
 
 {
   "answer": "Delay due to supplier shortage in component X",
   "confidence": 0.92,
   "sources": ["supply_chain_log_2026_03"]
 }
+````
 🔁 2) EVENT SCHEMA DESIGN (CRITICAL)
 
 Use a standardized event envelope across all domains.
