@@ -5,7 +5,8 @@
 
 
 
-## Core Services
+
+## 🔁 1) Core Services
 ### 1. Order Service
 
 ````shell
@@ -79,11 +80,12 @@ Response
   "sources": ["supply_chain_log_2026_03"]
 }
 ````
-🔁 2) EVENT SCHEMA DESIGN (CRITICAL)
+## 🔁 2) EVENT SCHEMA DESIGN (CRITICAL)
 
-Use a standardized event envelope across all domains.
+### Use a standardized event envelope across all domains.
 
-Base Event Schema (CloudEvents-style)
+#### Base Event Schema (CloudEvents-style)
+````shell
 {
   "eventId": "uuid",
   "eventType": "ProductionStarted",
@@ -96,7 +98,8 @@ Base Event Schema (CloudEvents-style)
     "lineId": "L-2"
   }
 }
-Key Event Types
+````
+#### Key Event Types
 OrderPlaced
 ProductionStarted
 QualityCheckPassed
@@ -110,18 +113,21 @@ FailureDetected
 
 👉 All services subscribe to relevant events.
 
-Event Versioning Strategy
+#### Event Versioning Strategy
+````shell
 {
   "eventType": "ProductionStarted",
   "version": "v2"
 }
+````
 Backward compatible changes only
 Schema registry (e.g., Avro + registry)
-🧠 3) DATA MODEL (DIGITAL TWIN)
+## 🧠 3) DATA MODEL (DIGITAL TWIN)
 
 Stored in Cosmos DB (NoSQL)
 
-Product Digital Twin Document
+### Product Digital Twin Document
+````shell
 {
   "productId": "PROD-456",
   "orderId": "ORD-123",
@@ -152,6 +158,7 @@ Product Digital Twin Document
     "lastUpdated": "2026-03-23T12:00:00Z"
   }
 }
+````
 Time-Series IoT Schema (Azure Data Explorer)
 {
   "timestamp": "2026-03-23T12:00:00Z",
