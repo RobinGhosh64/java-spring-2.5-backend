@@ -210,11 +210,12 @@ Supplier performance
 Inventory levels
 Historical delays
 External signals (weather, logistics)
-D. Generative AI (RAG Architecture)
-Stack
+### D. Generative AI (RAG Architecture)
+#### Stack
 Azure OpenAI (LLM)
 Azure Cognitive Search (vector DB)
-RAG Pipeline
+#### RAG Pipeline
+````shell
 User Query
    ↓
 Embedding Model
@@ -224,11 +225,13 @@ Vector Search (manuals, logs, tickets)
 Context Retrieval
    ↓
 LLM (grounded response)
-Example Retrieved Context
+````
+#### Example Retrieved Context
 Service manual PDF
 Past failure tickets
 Technician notes
-🧠 Prompt Engineering (Example)
+### 🧠 Prompt Engineering (Example)
+````shell
 You are an industrial maintenance assistant.
 
 Context:
@@ -238,34 +241,32 @@ Context:
 
 Question:
 What is the likely cause and recommended fix?
-⚙️ 5) DATA PIPELINE (END-TO-END)
-Real-Time Flow
+````
+### ⚙️ 5) DATA PIPELINE (END-TO-END)
+#### Real-Time Flow
+````shell
 IoT Device → IoT Hub → Event Hubs → Stream Processing (Databricks)
 → Feature Store → ML Model → Prediction → Cosmos DB
+````
 Batch Flow
+````shell
 Data Lake → Data Factory → Synapse → BI / Model Training
-🔐 6) OBSERVABILITY + RELIABILITY
-Monitoring
+````
+### 🔐 6) OBSERVABILITY + RELIABILITY
+### Monitoring
 Azure Monitor
 Application Insights
-Key Metrics
+### Key Metrics
 Event lag
 Model accuracy
 API latency
 Data freshness
-Resilience Patterns
+### Resilience Patterns
 Retry + dead-letter queues (Service Bus)
 Idempotent event processing
 Circuit breakers (API layer)
-🎯 Final “Senior-Level” Insight
+### 🎯 Final “Senior-Level” Insight
 
-If you want to stand out, say this:
 
 “The hardest part isn’t the AI—it’s building a consistent event model and digital thread. Once that’s in place, AI becomes a force multiplier across every lifecycle stage.”
 
-If you want, I can go even further into:
-
-Database partitioning strategies (Cosmos DB RU optimization)
-Exact feature engineering examples
-Terraform / deployment architecture
-Sequence diagrams for one lifecycle event
