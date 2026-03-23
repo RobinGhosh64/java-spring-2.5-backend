@@ -1,60 +1,7 @@
 
 # API DESIGN - (Microservices + Contracts) (Artifact By: Robin Ghosh @robin.ghosh@microsoft.com)
 
-
-We design domain-driven microservices, each owning its own data and exposing APIs.
-<img src="media/devday-select-create-storage-account.png">
-
-
-## Step 6: Ask Azure to wire up this Blob Storage Account to emit Events when a new blob is added to this container
-
-Important steps to follow, please pay attention.
-
-
-### Step 6a: Ensure the Azure subscription has **Registered** the *Microsoft.EventGrid resource provider* 
-
-- Navigate in the Azure portal to the **Subscription**
-- Select the **Settings->Resource providers**
-- Filter on **EventGrid** 
-- **Verify** or **Check**: **Status=Registered**
-
-<img src="media/sub.eventgrid.registered.png">
-
-### Step 6b: Ask Azure to create a Event Subscriber(consumer) to trap events, push to EventGrid Topic and then call our Azure Function for post processing 
-
-Navigate to the Resource Group created previously, select the **devdaymystorage** storage account, Click on **Events** <img src="media/rg.events.select.png" > icon and thenk click on **Event Subscription** on top, to create a new consumer. 
-
 <img src="media/devday-create-azure-event-subscriber.png">
-
-
-### Step 7: Event Grid Blob Storage Light Test
-
-Current status is the following have been created and ready for testing: 
-
-- Azure Blob storage account 
-- Event Grid Topic created by Azure
-- Function App to receive and log events 
-
-Next step is to create an blob container, upload files and verify the Event Grid System Topic triggers the Function App 
-
-- Navigate to the Resource Group, select our Blob storage account **devdayfebmystorage**
-- Select: **Containers**, **+ Add Container**
-- Name: **test**, 
-- Access level: **default** or **as desired** 
-
-Click on **Review + create** and then confirm final creation
-
-Open a second browser session in the Azure Portal:
-- Session 1: Navigate to the newly created **test** container1
-- Session 2: Navigate to the Function App, **EventGridTrigger1**, and open the **Logs** menu, to view the Function logs 
-- **Blob container**, select **Upload**, upload a favorite file, image or related media:
-
-<img src="media/upload-blob-test.png"> 
-
--  **EventGridTrigger1**, observe for each image, Event Grid will trigger the Fuction, **Logs** will reflect the Event Grid trigger content: 
-
-<img src="media/output-binding-log.png"> 
-
 
 ## Step 8: Azure Cosmos DB Output Binding
 
@@ -99,7 +46,7 @@ GET /orders/{orderId}
 GET /orders/{orderId}/status
 
 Response
-
+````shell
 {
   "orderId": "ORD-123",
   "customerId": "CUST-9",
@@ -112,12 +59,13 @@ Response
   "status": "IN_PRODUCTION",
   "createdAt": "2026-03-20T10:00:00Z"
 }
+````
 2. Product Digital Twin Service
 GET /products/{productId}/lifecycle
 GET /products/{productId}/health
 
 Response
-
+````shell
 {
   "productId": "PROD-456",
   "orderId": "ORD-123",
@@ -127,6 +75,7 @@ Response
   "lastServiceDate": "2026-03-10",
   "healthScore": 0.87
 }
+````
 3. Event Ingestion API (for external systems)
 POST /events
 {
