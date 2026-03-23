@@ -39,8 +39,8 @@ module.exports = async function (context, eventGridEvent) {
 
 ````
 
-Core Services
-#1. Order Service
+## Core Services
+###1. Order Service
 ````shell
 POST /orders
 GET /orders/{orderId}
