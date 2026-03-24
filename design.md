@@ -94,7 +94,7 @@ Response
   "productId": "PROD-456",
   "orderId": "ORD-123",
   "payload": {
-    " المصنعId": "F-1",
+    "id": 3RQYEW,
     "lineId": "L-2"
   }
 }
